@@ -18,7 +18,8 @@ namespace RedRunner
 	{
 
 		public delegate void CoinChangedHandler ( int coin );
-
+		public delegate void HeartChangeHandler ( int heart );
+		
 		public delegate void AudioEnabledHandler ( bool active );
 
 		public delegate void ScoreHandler ( float newScore, float highScore, float lastScore );
@@ -28,6 +29,7 @@ namespace RedRunner
 		public static event ResetHandler OnReset;
 		public static event ScoreHandler OnScoreChanged;
 		public static event CoinChangedHandler OnCoinChanged;
+		public static event HeartChangeHandler OnHeartChanged;
 		public static event AudioEnabledHandler OnAudioEnabled;
 
 		private static GameManager m_Singleton;
@@ -55,40 +57,29 @@ namespace RedRunner
 		private float m_Score = 0f;
 
 		private int m_Coin = 0;
+		private int m_Heart = 0;
 		private bool m_GameStarted = false;
 		private bool m_GameRunning = false;
 		private bool m_AudioEnabled = true;
 
-		public int coin
-		{
-			get
-			{
-				return m_Coin;
-			}
+		public int coin {
+			get { return m_Coin; }
 		}
 
-		public bool gameStarted
-		{
-			get
-			{
-				return m_GameStarted;
-			}
+		public int heart {
+			get { return m_Heart; }
 		}
 
-		public bool gameRunning
-		{
-			get
-			{
-				return m_GameRunning;
-			}
+		public bool gameStarted {
+			get	{ return m_GameStarted; }
 		}
 
-		public bool audioEnabled
-		{
-			get
-			{
-				return m_AudioEnabled;
-			}
+		public bool gameRunning {
+			get { return m_GameRunning; }
+		}
+
+		public bool audioEnabled {
+			get { return m_AudioEnabled; }
 		}
 
 		void Awake ()
@@ -103,6 +94,7 @@ namespace RedRunner
 			EndGame ();
 			m_Score = 0f;
 			Coin.OnCoinCollected += Coin_OnCoinCollected;
+			Heart.OnHeartCollected += Heart_OnHeartCollected;
 			if ( SaveGame.Exists ( "coin" ) )
 			{
 				m_Coin = SaveGame.Load<int> ( "coin" );
@@ -110,6 +102,14 @@ namespace RedRunner
 			else
 			{
 				m_Coin = 0;
+			}
+			if ( SaveGame.Exists ( "heart") )
+			{
+				m_Heart = SaveGame.Load<int> ( "heart" );
+			}
+			else 
+			{
+				m_Heart = 0;
 			}
 			if ( SaveGame.Exists ( "audioEnabled" ) )
 			{
@@ -138,6 +138,10 @@ namespace RedRunner
 			if ( OnCoinChanged != null )
 			{
 				OnCoinChanged ( m_Coin );
+			}
+			if ( OnHeartChanged != null )
+			{
+				OnHeartChanged ( m_Heart );
 			}
 			m_MainCharacter.OnDead += MainCharacter_OnDead;
 			m_StartScoreX = m_MainCharacter.transform.position.x;
@@ -199,6 +203,15 @@ namespace RedRunner
 			if ( OnCoinChanged != null )
 			{
 				OnCoinChanged ( m_Coin );
+			}
+		}
+
+		void Heart_OnHeartCollected (Heart heart)
+		{
+			m_Heart++;
+			if (OnHeartChanged != null) 
+			{
+				OnHeartChanged (m_Heart);
 			}
 		}
 
